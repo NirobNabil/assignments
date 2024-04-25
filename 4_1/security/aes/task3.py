@@ -37,6 +37,11 @@ class Sender():
         self.rsa_bitsize = rsa_bitsize
 
     def send( self, plaintext ):
+        
+        f = open("do_not_open/alice.in", 'w')
+        f.write(plaintext)
+        f.close()
+                
         plaintext_hex = AES.plaintext_ascii_to_hex( plaintext )
         plaintext_blocks = AES.plaintext_hex_to_blocks( plaintext_hex )
         
@@ -52,12 +57,12 @@ class Sender():
         public_key, private_key = RSA.generate_keypair( self.rsa_bitsize )
         encrypted_key_arr = RSA.encrypt( public_key, getStringFromList( key ) )
 
-        f = open("private_key", "w")
+        f = open("do_not_open/private_key", "w")
         f.write( json.dumps(private_key) )
         f.close()
 
 
-        f = open("alice_out", "w")
+        f = open("do_not_open/alice_out", "w")
         f.write( json.dumps( { 'ciphertext': encrypted_blocks, 'key': encrypted_key_arr } ) )
         f.close()
 
@@ -79,7 +84,7 @@ class Receiver():
 
     def receive( self ):
 
-        f = open("alice_out", "r")
+        f = open("do_not_open/alice_out", "r")
         d = f.read()
         d = json.loads( d )
         f.close()
@@ -88,7 +93,7 @@ class Receiver():
         print("Encrypted blocks: ", encrypted_blocks)
         print("Encrypted key: ", encrypted_key_arr)
         
-        f = open("private_key", "r")
+        f = open("do_not_open/private_key", "r")
         private_key = json.loads( f.read() )
         f.close()
         
@@ -105,8 +110,22 @@ class Receiver():
 
 
         print( "".join( [ bytearray.fromhex(ret[2:]).decode() for ret in decrypted_hex ] ) )
+        f = open('do_not_open/bob.out', 'w')
+        f.write( "".join( [ bytearray.fromhex(ret[2:]).decode() for ret in decrypted_hex ] ) )
+        f.close()
 
 
+
+def verify():
+    fa = open("do_not_open/alice.in", 'r')
+    alice_in = fa.read()
+    fb = open("do_not_open/bob.out", 'r')
+    bob_out = fb.read()
+
+    if alice_in == bob_out.strip():
+        return True
+    else:
+        return False
 
 
 alice = Sender( 16 )
@@ -115,3 +134,5 @@ bob = Receiver( 16 )
 
 alice.send( "OMYGOWITWORKSOMYGOWITWORKSOMYGOWITWORKSOMYGOWITWORKS" )
 bob.receive( )
+
+print( "Transfer Successful" if verify() else "Transfer Failed")

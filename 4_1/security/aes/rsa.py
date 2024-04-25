@@ -40,9 +40,10 @@ def generate_distinct_primes(bit_size):
     return (p,q)
 
 def GCD(x, y):
-    while(y):
+    while(y != 0):
         x = y
         y = x % y
+        print(x,y )
 
     return abs(x)
 
@@ -59,7 +60,7 @@ def generate_keypair(bit_size):
     
     e = random.randint(min_e, max_e)
     
-    while e % phi_n == 0 or not GCD(e, phi_n) == 1:
+    while e % phi_n == 0 or not sympy.gcd(e, phi_n) == 1:
         e = random.randint(min_e, max_e)
 
     d = pow( e, -1, phi_n )
